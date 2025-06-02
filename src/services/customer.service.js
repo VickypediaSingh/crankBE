@@ -217,7 +217,7 @@ exports.sendOtp = async (req, res) => {
 
       if (existingCustomer.rows.length > 0) {
         return res.status(400).json({
-          message: "Recipient already exists with this mobile number",
+          message: "A recipient already exists with this mobile number",
         });
       }
     }
@@ -327,7 +327,9 @@ exports.createCustomer = async (req, res) => {
       [mobile_number]
     );
     if (existingCustomer.rowCount > 0) {
-      return res.status(400).json({ message: "Customer already exists" });
+      return res.status(400).json({
+        message: "A recipient already exists with this mobile number",
+      });
     }
 
     const distributor = await db.query(
@@ -337,7 +339,7 @@ exports.createCustomer = async (req, res) => {
     const distributorData = distributor.rows[0];
 
     if (!distributorData) {
-      return res.status(400).json({ message: "Distributor not found" });
+      return res.status(400).json({ message: "Ambassador not found" });
     }
 
     // Step 4: Check if distributor has any quantity left

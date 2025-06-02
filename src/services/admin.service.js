@@ -111,7 +111,10 @@ async function createDistributor({
   );
 
   if (existing.rows.length > 0) {
-    throw { status: 409, message: "Distributor already exists" };
+    throw {
+      status: 409,
+      message: "An ambassador already exists with these credentials",
+    };
   }
 
   await pool.query(
@@ -172,9 +175,9 @@ const generateRecipientsCSV = async () => {
 
   const recipients = result.rows.map((row) => ({
     ambassador_name: row.ambassador_name,
+    ambassador_phone_number: formatPhoneNumber(row.ambassador_phone),
     recipient_name: row.recipient_name,
     recipient_phone_number: formatPhoneNumber(row.recipient_phone),
-    ambassador_phone_number: formatPhoneNumber(row.ambassador_phone),
     date_time_assigned: new Date(row.date_time_received).toLocaleString(
       "en-IN",
       {
@@ -186,9 +189,9 @@ const generateRecipientsCSV = async () => {
 
   const fields = [
     "ambassador_name",
+    "ambassador_phone_number",
     "recipient_name",
     "recipient_phone_number",
-    "ambassador_phone_number",
     "date_time_assigned",
   ];
 
