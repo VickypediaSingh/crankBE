@@ -117,7 +117,7 @@ async function assignAdditionalUnits(distributorId, additionalUnits) {
 async function getDailyRecipients() {
   try {
     const result = await pool.query(
-      `SELECT 
+      `SELECT
         s.created_at AS date_time_received,
         d.name AS ambassador_name,
         d.mobile_number AS ambassador_phone,
@@ -148,7 +148,41 @@ async function getDailyRecipients() {
     return err;
   }
 }
+// INDIAN TIMING
+// async function getDailyRecipients() {
+//   try {
+//     const result = await pool.query(
+//       `SELECT
+//         s.created_at AS date_time_received,
+//         d.name AS ambassador_name,
+//         d.mobile_number AS ambassador_phone,
+//         c.name AS recipient_name,
+//         c.mobile_number AS recipient_phone
+//       FROM customer c
+//       JOIN sale s ON c.id = s.customer_id
+//       JOIN distributer d ON s.distributor_id = d.id
+//       WHERE s.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Kolkata'::date = CURRENT_DATE AT TIME ZONE 'Asia/Kolkata'::date
+//       ORDER BY s.created_at DESC`
+//     );
 
+//     if (result && result.rows) {
+//       result.rows.forEach((element) => {
+//         element.ambassador_phone = formatPhoneNumber(element.ambassador_phone);
+//         element.recipient_phone = formatPhoneNumber(element.recipient_phone);
+//         element.date_time_received = new Date(
+//           element.date_time_received
+//         ).toLocaleString("en-IN", {
+//           timeZone: "Asia/Kolkata",
+//         });
+//       });
+//     }
+
+//     return result.rows;
+//   } catch (err) {
+//     console.error("Error fetching recipients summary:", err);
+//     return err;
+//   }
+// }
 //
 function formatPhoneNumber(number) {
   // Remove all non-digit characters just in case
