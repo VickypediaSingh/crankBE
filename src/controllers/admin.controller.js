@@ -6,6 +6,7 @@ const {
   downloadDistributors,
   downloadRecipients,
   getAllDistributorsSummary,
+  getDailyRecipients,
   getADistributorSummary,
 } = require("../services/admin.service");
 const {
@@ -30,7 +31,91 @@ function formatPhoneNumber(number) {
 
   return number;
 }
+//
+// '/distributor/:id'
+router.get(
+  "/distributor/:id",
+  authenticateJWT,
+  authorizeRoles("admin"),
+  async (req, res) => {
+    try {
+      const distributor = await Distributor.findById(req.params.id);
+      res.json(distributor);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching distributor" });
+    }
+  }
+);
 
+// "/assign-units/:id"
+router.post(
+  "/assign-units/:id",
+  authenticateJWT,
+  authorizeRoles("admin"),
+  async (req, res) => {
+    try {
+      const { additional_units } = req.body;
+
+      const distributor = await Distributor.findByIdAndUpdate(
+        req.params.id,
+        {
+          $inc: {
+            quantity_alloted: additional_units,
+            quantity_remaining: additional_units,
+          },
+        },
+        { new: true }
+      );
+
+      res.json(distributor);
+    } catch (error) {
+      res.status(500).json({ message: "Error assigning units" });
+    }
+  }
+);
+
+//
+// "/assign-more-to-an-ambassador",
+router.post(
+  "/assign-more-to-an-ambassador",
+  authenticateJWT,
+  authorizeRoles("admin"),
+  async (req, res) => {
+    try {
+      const result = await getAllDistributorsSummary();
+      res.json(result);
+    } catch (err) {
+      console.log("Error: ", err);
+      const status = err.status || 500;
+      res
+        .status(status)
+        .json({ message: err.message || "Internal server error" });
+    }
+  }
+);
+
+//
+// "/get-daily-recipients",
+router.post(
+  "/get-daily-recipients",
+  authenticateJWT,
+  authorizeRoles("admin"),
+  async (req, res) => {
+    try {
+      const result = await getDailyRecipients();
+      res.json(result);
+    } catch (err) {
+      console.log("Error: ", err);
+      const status = err.status || 500;
+      res
+        .status(status)
+        .json({ message: err.message || "Internal server error" });
+    }
+  }
+);
+
+//
+// "/upload-distributors",
 router.post(
   "/upload-distributors",
   authenticateJWT,
@@ -53,7 +138,8 @@ router.post(
     }
   }
 );
-
+//
+// "/create-distributor",
 router.post(
   "/create-distributor",
   authenticateJWT,
@@ -72,6 +158,8 @@ router.post(
   }
 );
 
+//
+// "/distributors-summary",
 router.get(
   "/distributors-summary",
   authenticateJWT,
@@ -90,6 +178,8 @@ router.get(
   }
 );
 
+//
+// "/distributor-summary",
 router.get(
   "/distributor-summary",
   authenticateJWT,
@@ -114,6 +204,8 @@ router.get(
   }
 );
 
+//
+// "/download-distributors",
 router.get(
   "/download-distributors",
   authenticateJWT,
@@ -134,6 +226,8 @@ router.get(
   }
 );
 
+//
+// "/download-recipients",
 router.get(
   "/download-recipients",
   //authenticateJWT,
@@ -153,5 +247,5 @@ router.get(
     }
   }
 );
-
+//
 module.exports = router;

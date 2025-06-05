@@ -4,6 +4,78 @@ const bcrypt = require("bcrypt");
 const { Parser } = require("json2csv");
 const pool = require("../config/db");
 
+async function assignMoreToAnAmbassador() {}
+// OLD
+// async function getDailyRecipients() {
+//   try {
+//     const result = await pool.query(
+//       `SELECT
+//     s.created_at AS date_time_received,
+//     d.name AS ambassador_name,
+//     d.mobile_number AS ambassador_phone,
+//     c.name AS recipient_name,
+//     c.mobile_number AS recipient_phone
+//   FROM customer c
+//   JOIN sale s ON c.id = s.customer_id
+//   JOIN distributer d ON s.distributor_id = d.id
+//   ORDER BY s.created_at DESC`
+//     );
+
+//     if (result && result.rows) {
+//       result.rows.forEach((element) => {
+//         element.ambassador_phone = formatPhoneNumber(element.ambassador_phone);
+//         element.recipient_phone = formatPhoneNumber(element.recipient_phone);
+//         element.date_time_received = new Date(
+//           element.date_time_received
+//         ).toLocaleString("en-IN", {
+//           timeZone: "Asia/Kolkata",
+//         });
+//       });
+//     }
+
+//     return result.rows;
+//   } catch (err) {
+//     console.error("Error fetching recipients summary:", err);
+//     return err;
+//   }
+// }
+// NEW
+async function getDailyRecipients() {
+  try {
+    const result = await pool.query(
+      `SELECT 
+        s.created_at AS date_time_received,
+        d.name AS ambassador_name,
+        d.mobile_number AS ambassador_phone,
+        c.name AS recipient_name,
+        c.mobile_number AS recipient_phone
+      FROM customer c
+      JOIN sale s ON c.id = s.customer_id
+      JOIN distributer d ON s.distributor_id = d.id
+      WHERE s.created_at::date = CURRENT_DATE
+      ORDER BY s.created_at DESC`
+    );
+
+    if (result && result.rows) {
+      result.rows.forEach((element) => {
+        element.ambassador_phone = formatPhoneNumber(element.ambassador_phone);
+        element.recipient_phone = formatPhoneNumber(element.recipient_phone);
+        element.date_time_received = new Date(
+          element.date_time_received
+        ).toLocaleString("en-IN", {
+          timeZone: "Asia/Kolkata",
+        });
+      });
+    }
+
+    return result.rows;
+  } catch (err) {
+    console.error("Error fetching recipients summary:", err);
+    return err;
+  }
+}
+
+//
 function formatPhoneNumber(number) {
   // Remove all non-digit characters just in case
   number = number.replace(/\D/g, "");
@@ -15,17 +87,7 @@ function formatPhoneNumber(number) {
 
   return number;
 }
-function formatPhoneNumber(number) {
-  // Remove all non-digit characters just in case
-  number = number.replace(/\D/g, "");
-
-  // If it starts with '91' and length is more than 10, remove the prefix
-  if (number.startsWith("91") && number.length > 10) {
-    return number.slice(-10);
-  }
-
-  return number;
-}
+//
 async function handleDistributorCSVBuffer(buffer) {
   const distributors = [];
 
@@ -89,7 +151,7 @@ async function handleDistributorCSVBuffer(buffer) {
       .on("error", reject);
   });
 }
-
+//
 async function createDistributor({
   name,
   email,
@@ -127,7 +189,7 @@ async function createDistributor({
 
   return { message: "Distributor created successfully" };
 }
-
+//
 const generateDistributorsCSV = async () => {
   const result = await pool.query(
     `SELECT name, email, mobile_number AS phone_number, created_at, quantity_alloted AS units_assigned 
@@ -158,7 +220,7 @@ const generateDistributorsCSV = async () => {
 
   return csv;
 };
-
+//
 const generateRecipientsCSV = async () => {
   const result = await pool.query(
     `SELECT 
@@ -200,7 +262,7 @@ const generateRecipientsCSV = async () => {
 
   return csv;
 };
-
+//
 async function downloadDistributors() {
   try {
     const csv = await generateDistributorsCSV();
@@ -210,7 +272,7 @@ async function downloadDistributors() {
     res.status(500).json({ message: "Internal server error" });
   }
 }
-
+//
 async function downloadRecipients() {
   try {
     const csv = await generateRecipientsCSV();
@@ -220,7 +282,20 @@ async function downloadRecipients() {
     return err;
   }
 }
+//
+async function getDistributorCount() {
+  try {
+    const result = await pool.query(`
+      SELECT COUNT(*) AS total_distributors FROM distributer
+    `);
 
+    return parseInt(result.rows[0].total_distributors, 10);
+  } catch (err) {
+    console.error("Error fetching ambassadors count:", err);
+    return err;
+  }
+}
+//
 async function getAllDistributorsSummary() {
   try {
     const result = await pool.query(`
@@ -244,11 +319,11 @@ async function getAllDistributorsSummary() {
 
     return result.rows;
   } catch (err) {
-    console.error("Error fetching distributor summary:", err);
+    console.error("Error fetching ambassadors summary:", err);
     return err;
   }
 }
-
+//
 async function getADistributorSummary(distributorId) {
   try {
     const result = await pool.query(
@@ -269,11 +344,11 @@ async function getADistributorSummary(distributorId) {
     console.log(result);
     return result.rows[0];
   } catch (err) {
-    console.error("Error fetching distributor summary:", err);
+    console.error("Error fetching ambassador summary:", err);
     return err;
   }
 }
-
+//
 module.exports = {
   handleDistributorCSVBuffer,
   createDistributor,
@@ -281,4 +356,7 @@ module.exports = {
   getAllDistributorsSummary,
   downloadRecipients,
   getADistributorSummary,
+  getDistributorCount,
+  assignMoreToAnAmbassador,
+  getDailyRecipients,
 };
