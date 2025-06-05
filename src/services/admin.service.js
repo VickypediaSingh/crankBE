@@ -4,8 +4,82 @@ const bcrypt = require("bcrypt");
 const { Parser } = require("json2csv");
 const pool = require("../config/db");
 
-async function assignMoreToAnAmbassador() {}
-// OLD
+async function updateDistributorUnits(
+  distributorId,
+  newAllocated,
+  newRemaining
+) {
+  try {
+    console.log("Updating distributor:", {
+      distributorId,
+      newAllocated,
+      newRemaining,
+    });
+
+    // Verify the distributor exists
+    const checkResult = await pool.query(
+      "SELECT id FROM distributer WHERE id = $1",
+      [distributorId]
+    );
+
+    if (checkResult.rows.length === 0) {
+      throw new Error(`Distributor with ID ${distributorId} not found`);
+    }
+
+    // Update the distributor
+    const updateResult = await pool.query(
+      "UPDATE distributer SET quantity_alloted = $1, quantity_remaining = $2 WHERE id = $3 RETURNING *",
+      [newAllocated, newRemaining, distributorId]
+    );
+
+    console.log("Update successful:", updateResult.rows[0]);
+
+    return {
+      success: true,
+      distributor: updateResult.rows[0],
+    };
+  } catch (err) {
+    console.error("Database error:", err);
+    throw err;
+  }
+}
+//
+async function assignAdditionalUnits(distributorId, additionalUnits) {
+  try {
+    // First verify the distributor exists
+    const checkResult = await pool.query(
+      "SELECT quantity_alloted, quantity_remaining FROM distributer WHERE id = $1",
+      [distributorId]
+    );
+
+    if (checkResult.rows.length === 0) {
+      throw new Error("Distributor not found");
+    }
+
+    const currentAlloted = checkResult.rows[0].quantity_alloted;
+    const currentRemaining = checkResult.rows[0].quantity_remaining;
+
+    // Calculate new values
+    const newAlloted = currentAlloted + additionalUnits;
+    const newRemaining = currentRemaining + additionalUnits;
+
+    // Update the distributor
+    await pool.query(
+      "UPDATE distributer SET quantity_alloted = $1, quantity_remaining = $2 WHERE id = $3",
+      [newAlloted, newRemaining, distributorId]
+    );
+
+    return {
+      success: true,
+      newAlloted,
+      newRemaining,
+    };
+  } catch (err) {
+    console.error("Error assigning additional units:", err);
+    throw err;
+  }
+}
+// OLD (FETCHED ALL DATA)
 // async function getDailyRecipients() {
 //   try {
 //     const result = await pool.query(
@@ -299,7 +373,7 @@ async function getDistributorCount() {
 async function getAllDistributorsSummary() {
   try {
     const result = await pool.query(`
-      SELECT 
+      SELECT
         d.id,
         d.name,
         d.mobile_number,
@@ -357,6 +431,7 @@ module.exports = {
   downloadRecipients,
   getADistributorSummary,
   getDistributorCount,
-  assignMoreToAnAmbassador,
   getDailyRecipients,
+  assignAdditionalUnits,
+  updateDistributorUnits,
 };

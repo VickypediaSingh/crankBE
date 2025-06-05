@@ -8,7 +8,10 @@ const {
   getAllDistributorsSummary,
   getDailyRecipients,
   getADistributorSummary,
+  assignAdditionalUnits,
+  updateDistributorUnits,
 } = require("../services/admin.service");
+const validateNumbers = require("../middlewares/numberValidation");
 const {
   authenticateJWT,
   authorizeRoles,
@@ -31,45 +34,51 @@ function formatPhoneNumber(number) {
 
   return number;
 }
+
 //
-// '/distributor/:id'
-router.get(
-  "/distributor/:id",
-  authenticateJWT,
-  authorizeRoles("admin"),
-  async (req, res) => {
-    try {
-      const distributor = await Distributor.findById(req.params.id);
-      res.json(distributor);
-    } catch (error) {
-      res.status(500).json({ message: "Error fetching distributor" });
-    }
-  }
-);
-
-// "/assign-units/:id"
 router.post(
-  "/assign-units/:id",
+  "/assign-units/:distributorId",
   authenticateJWT,
   authorizeRoles("admin"),
   async (req, res) => {
     try {
-      const { additional_units } = req.body;
+      console.log("Request body:", req.body);
+      console.log("Request params:", req.params);
 
-      const distributor = await Distributor.findByIdAndUpdate(
-        req.params.id,
-        {
-          $inc: {
-            quantity_alloted: additional_units,
-            quantity_remaining: additional_units,
-          },
-        },
-        { new: true }
+      const { distributorId } = req.params;
+      const { new_allocated, new_remaining } = req.body;
+
+      if (isNaN(new_allocated) || isNaN(new_remaining)) {
+        console.log("Invalid units received");
+        return res.status(400).json({ error: "Invalid units value" });
+      }
+
+      console.log("Attempting to update:", {
+        distributorId,
+        new_allocated,
+        new_remaining,
+      });
+
+      const result = await updateDistributorUnits(
+        distributorId,
+        parseInt(new_allocated, 10),
+        parseInt(new_remaining, 10)
       );
 
-      res.json(distributor);
+      console.log("Update successful:", result);
+      res.json(result);
     } catch (error) {
-      res.status(500).json({ message: "Error assigning units" });
+      console.error("Full error stack:", error);
+      res.status(500).json({
+        error: error.message,
+        details:
+          process.env.NODE_ENV === "development"
+            ? {
+                stack: error.stack,
+                type: error.name,
+              }
+            : undefined,
+      });
     }
   }
 );
@@ -249,3 +258,5 @@ router.get(
 );
 //
 module.exports = router;
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
