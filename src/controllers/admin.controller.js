@@ -34,8 +34,25 @@ function formatPhoneNumber(number) {
 
   return number;
 }
+//
+// "/logout",
+router.post("/logout", authenticateJWT, async (req, res) => {
+  try {
+    const userRole = req.user.role; // Assuming your JWT contains the role
+
+    res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+      role: userRole, // Send back the role
+    });
+  } catch (err) {
+    console.error("Logout error:", err);
+    res.status(500).json({ message: "Logout failed" });
+  }
+});
 
 //
+// "/assign-units/:distributorId",
 router.post(
   "/assign-units/:distributorId",
   authenticateJWT,
@@ -147,6 +164,7 @@ router.post(
     }
   }
 );
+
 //
 // "/create-distributor",
 router.post(
