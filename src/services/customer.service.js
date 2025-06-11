@@ -222,7 +222,7 @@
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
+// Ambassadors cannot register as recipients now
 const db = require("../config/db");
 const axios = require("axios");
 
@@ -261,18 +261,6 @@ exports.sendOtp = async (req, res) => {
     }
 
     if (type === "distributor") {
-      // NEW CHECK: Prevent customers from registering as distributors
-      const existingCustomer = await db.query(
-        `SELECT id FROM customer WHERE mobile_number = $1`,
-        [cleanMobileNumber]
-      );
-
-      if (existingCustomer.rows.length > 0) {
-        return res.status(400).json({
-          message: "Recipients cannot register as ambassadors",
-        });
-      }
-      //
       const existingDistributor = await db.query(
         `SELECT id FROM distributer WHERE mobile_number = $1`,
         [cleanMobileNumber]

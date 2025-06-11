@@ -274,6 +274,19 @@ async function createDistributor({
   if (/^\d{10}$/.test(mobile)) {
     mobile = `+91${mobile}`;
   }
+  // 1. First check if this is an existing recipient
+  // Ambassadors cannot register as recipients now, ka ulta
+  const existingCustomer = await pool.query(
+    "SELECT id FROM customer WHERE mobile_number = $1",
+    [mobile]
+  );
+
+  if (existingCustomer.rows.length > 0) {
+    throw {
+      status: 400,
+      message: "Recipients cannot be registered as ambassadors",
+    };
+  }
 
   const existing = await pool.query(
     "SELECT id FROM distributer WHERE mobile_number = $1 OR email = $2",
@@ -295,7 +308,7 @@ async function createDistributor({
   // Optional: send welcome email or SMS
   //await sendWelcomeEmail(name, email, mobile);
 
-  return { message: "Distributor created successfully" };
+  return { message: "Ambassador created successfully" };
 }
 //
 const generateDistributorsCSV = async () => {
