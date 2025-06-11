@@ -94,7 +94,7 @@ async function verifyOtpDistributor(req, res) {
     });
   } catch (err) {
     console.error("Error in verifyOtp:", err);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Error verifying OTP" });
   }
 }
 
@@ -158,7 +158,7 @@ async function verifyOtpAdmin(req, res) {
     });
   } catch (err) {
     console.error("Error in verifyOtp:", err);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Error verifying OTP" });
   }
 }
 

@@ -115,7 +115,7 @@ router.post(
       const status = err.status || 500;
       res
         .status(status)
-        .json({ message: err.message || "Internal server error" });
+        .json({ message: err.message || "Error fetching ambassadors summary" });
     }
   }
 );
@@ -135,7 +135,7 @@ router.post(
       const status = err.status || 500;
       res
         .status(status)
-        .json({ message: err.message || "Internal server error" });
+        .json({ message: err.message || "Error fetching daily recipients" });
     }
   }
 );
@@ -160,7 +160,7 @@ router.post(
       });
     } catch (err) {
       console.error("CSV Upload Error:", err);
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).json({ message: "Error uploading ambassador" });
     }
   }
 );
@@ -180,7 +180,7 @@ router.post(
       const status = err.status || 500;
       res
         .status(status)
-        .json({ message: err.message || "Internal server error" });
+        .json({ message: err.message || "Error creating ambassador" });
     }
   }
 );
@@ -200,7 +200,7 @@ router.get(
       const status = err.status || 500;
       res
         .status(status)
-        .json({ message: err.message || "Internal server error" });
+        .json({ message: err.message || "Error fetching ambassadors" });
     }
   }
 );
@@ -216,7 +216,7 @@ router.get(
       const distributorId = req.user.id;
       const result = await getADistributorSummary(distributorId);
       if (!result) {
-        return res.status(404).json({ message: "Distributor not found" });
+        return res.status(404).json({ message: "Ambassador not found" });
       }
       result.mobile_number = formatPhoneNumber(result.mobile_number);
       console.log("new result", result);
@@ -226,7 +226,7 @@ router.get(
       const status = err.status || 500;
       res
         .status(status)
-        .json({ message: err.message || "Internal server error" });
+        .json({ message: err.message || "Error fetching ambassadors" });
     }
   }
 );
@@ -248,7 +248,7 @@ router.get(
       const status = err.status || 500;
       res
         .status(status)
-        .json({ message: err.message || "Internal server error" });
+        .json({ message: err.message || "Error downloading ambassadors' CSV" });
     }
   }
 );
@@ -270,7 +270,7 @@ router.get(
       const status = err.status || 500;
       res
         .status(status)
-        .json({ message: err.message || "Internal server error" });
+        .json({ message: err.message || "Error downloading CSV" });
     }
   }
 );

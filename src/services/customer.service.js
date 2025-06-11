@@ -272,7 +272,7 @@ exports.sendOtp = async (req, res) => {
     res.json({ message: "OTP sent successfully" });
   } catch (err) {
     console.error("Error in sendOtp:", err);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Error sending OTP" });
   }
 };
 
@@ -305,7 +305,7 @@ exports.verifyOtp = async (req, res) => {
     res.json({ message: "OTP verified successfully" });
   } catch (err) {
     console.error("Error in verifyOtp:", err);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Error verifying OTP" });
   }
 };
 
@@ -370,7 +370,7 @@ exports.createCustomer = async (req, res) => {
     res.json({ message: "Customer created and sale recorded successfully" });
   } catch (err) {
     console.error("Error in createCustomer:", err);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Error creating recipient" });
   }
 };
 
@@ -400,6 +400,6 @@ exports.customerslist = async (req, res) => {
     res.json(result.rows); // Send the result as a JSON response
   } catch (error) {
     console.error("Error fetching customers with distributors:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: "Error fetching recipients" });
   }
 };

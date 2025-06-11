@@ -377,7 +377,7 @@ async function downloadDistributors() {
     return csv;
   } catch (err) {
     console.error("CSV Download Error:", err);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Error generating CSV" });
   }
 }
 //

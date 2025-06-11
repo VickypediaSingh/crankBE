@@ -20,7 +20,7 @@ router.post("/admin/login", async (req, res) => {
       return res.status(401).json({ message: err.message });
     }
     console.error("Login error:", err);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Some error occured while logging in" });
   }
 });
 
