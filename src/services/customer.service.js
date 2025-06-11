@@ -298,7 +298,8 @@ exports.sendOtp = async (req, res) => {
     );
 
     await axios.post(
-      "https://bmfvr1xpt7.execute-api.ap-south-1.amazonaws.com/v1/smsapi",
+      // "https://bmfvr1xpt7.execute-api.ap-south-1.amazonaws.com/v1/smsapi",
+      "https://bmfvr1xpt7.execute-api.ap-south-1.amazonaws.com/v2/smsapi",
       { num: cleanMobileNumber, otp },
       {
         headers: {
