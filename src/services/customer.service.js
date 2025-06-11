@@ -203,13 +203,88 @@ const axios = require("axios");
 const generateOTP = () =>
   Math.floor(100000 + Math.random() * 900000).toString();
 
+// exports.sendOtp = async (req, res) => {
+//   try {
+//     const { mobile_number, type } = req.body;
+//     const cleanMobileNumber = mobile_number.replace(/[^\d+]/g, "");
+//     console.log("userType", type);
+//     //Step 1: Check if customer already exists
+//     if (type === "customer") {
+//       const existingCustomer = await db.query(
+//         `SELECT id FROM customer WHERE mobile_number = $1`,
+//         [mobile_number]
+//       );
+
+//       if (existingCustomer.rows.length > 0) {
+//         return res.status(400).json({
+//           message: "A recipient already exists with this mobile number",
+//         });
+//       }
+//     }
+
+//     if (type === "distributor") {
+//       const existingAmbassador = await db.query(
+//         `SELECT id FROM distributer WHERE mobile_number = $1`,
+//         [mobile_number]
+//       );
+
+//       if (existingAmbassador.rows.length === 0) {
+//         return res.status(400).json({
+//           message: "Ambassador does not exist with this mobile number",
+//         });
+//       }
+//     }
+
+//     if (type === "admin") {
+//       const existingAdmin = await db.query(
+//         `SELECT id FROM admin WHERE mobile_number = $1`,
+//         [mobile_number]
+//       );
+
+//       if (existingAdmin.rows.length === 0) {
+//         return res.status(400).json({
+//           message: "Admin does not exist with this mobile number",
+//         });
+//       }
+//     }
+
+//     const otp = generateOTP();
+//     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+//     await db.query(
+//       `INSERT INTO otp_verification (mobile_number, otp, expires_at, verified)
+//        VALUES ($1, $2, $3, false)
+//        ON CONFLICT (mobile_number) DO UPDATE SET otp = EXCLUDED.otp, expires_at = EXCLUDED.expires_at, verified = false`,
+//       [cleanMobileNumber, otp, expiresAt]
+//     );
+
+//     await axios.post(
+//       "https://bmfvr1xpt7.execute-api.ap-south-1.amazonaws.com/v1/smsapi",
+//       { num: cleanMobileNumber, otp },
+//       {
+//         headers: {
+//           Accept: "application/json",
+//           "Content-Type": "application/json",
+//         },
+//       }
+//     );
+
+//     res.json({ message: "OTP sent successfully" });
+//   } catch (err) {
+//     console.error("Error in sendOtp:", err);
+//     res.status(500).json({ message: "Error sending OTP" });
+//   }
+// };
+
 exports.sendOtp = async (req, res) => {
   try {
     const { mobile_number, type } = req.body;
     const cleanMobileNumber = mobile_number.replace(/[^\d+]/g, "");
     console.log("userType", type);
-    //Step 1: Check if customer already exists
+
+    // Step 1: Check if customer already exists
     if (type === "customer") {
+      // Check if this number is already a customer
       const existingCustomer = await db.query(
         `SELECT id FROM customer WHERE mobile_number = $1`,
         [mobile_number]
@@ -218,6 +293,18 @@ exports.sendOtp = async (req, res) => {
       if (existingCustomer.rows.length > 0) {
         return res.status(400).json({
           message: "A recipient already exists with this mobile number",
+        });
+      }
+
+      // NEW CHECK: Prevent distributors from registering as customers
+      const existingDistributor = await db.query(
+        `SELECT id FROM distributer WHERE mobile_number = $1`,
+        [mobile_number]
+      );
+
+      if (existingDistributor.rows.length > 0) {
+        return res.status(400).json({
+          message: "Ambassadors cannot be registered as recipients",
         });
       }
     }
