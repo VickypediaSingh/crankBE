@@ -450,20 +450,7 @@ exports.sendOtp = async (req, res) => {
     const cleanMobileNumber = mobile_number.replace(/[^\d+]/g, "");
     console.log("userType", type);
 
-    // Step 1: Check if customer already exists
     if (type === "customer") {
-      // Check if this number is already a customer
-      const existingCustomer = await db.query(
-        `SELECT id FROM customer WHERE mobile_number = $1`,
-        [cleanMobileNumber]
-      );
-
-      if (existingCustomer.rows.length > 0) {
-        return res.status(400).json({
-          message: "A recipient already exists with this mobile number",
-        });
-      }
-
       // Check if this number belongs to a distributor
       const existingDistributor = await db.query(
         `SELECT id FROM distributer WHERE mobile_number = $1`,
@@ -473,6 +460,17 @@ exports.sendOtp = async (req, res) => {
       if (existingDistributor.rows.length > 0) {
         return res.status(400).json({
           message: "Ambassadors cannot register as recipients",
+        });
+      }
+      // Check if this number is already a customer
+      const existingCustomer = await db.query(
+        `SELECT id FROM customer WHERE mobile_number = $1`,
+        [cleanMobileNumber]
+      );
+
+      if (existingCustomer.rows.length > 0) {
+        return res.status(400).json({
+          message: "A recipient already exists with this mobile number",
         });
       }
     }
